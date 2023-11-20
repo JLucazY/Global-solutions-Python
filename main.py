@@ -1,95 +1,84 @@
-import re
 import json
+import re
+from datetime import datetime
 
-def valida_nome(nome):
-    return bool(re.match("^[a-zA-ZáéíóúãõâêîôûàèìòùäëïöüçÁÉÍÓÚÃÕÂÊÎÔÛÀÈÌÒÙÄËÏÖÜÇ\s]+$", nome))
 
-def valida_cpf(cpf):
-    return re.match(r'^\d{3}\.\d{3}\.\d{3}-\d{2}$', cpf)
+def valida_data_nascimento(data_nascimento):
+    try:
+        data_formatada = datetime.strptime(data_nascimento, '%d/%m/%Y')
 
-def valida_senha(senha):
-    if len(senha) < 8:
-        print("A senha deve ter no mínimo 8 caracteres.")
-    if not re.search(r'[A-Z]', senha):
-        print("A senha deve conter pelo menos uma letra maiúscula.")
-    if not re.search(r'[a-z]', senha):
-        print("A senha deve conter pelo menos uma letra minúscula.")
-    if not re.search(r'\d', senha):
-        print("A senha deve conter pelo menos um número.")
-    if not re.search(r'[!@#$%^&*(),.?":{}|<>]', senha):
-        print("A senha deve conter pelo menos um caractere especial.")
-    if len(senha) < 8 or not re.search(r'[A-Z]', senha) or not re.search(r'[a-z]', senha) or not re.search(r'\d',
-                                                                                                           senha) or not re.search(
-            r'[!@#$%^&*(),.?":{}|<>]', senha):
+        if not 1900 <= data_formatada.year <= datetime.now().year:
+            return False
+
+        return True
+    except ValueError:
         return False
+
+def valida_rg(rg):
+    rg_numerico = re.sub(r'\D', '', rg)
+
+    if len(rg_numerico) != 9:
+        return False
+
+    if not 1 <= int(rg_numerico[0]) <= 9:
+        return False
+
+    soma = 0
+    for i in range(2, 10):
+        soma += int(rg_numerico[i - 1]) * (11 - i)
+
+    resto = soma % 11
+    dv_calculado = 11 - resto if resto > 1 else 0
+
+    if dv_calculado != int(rg_numerico[8]):
+        return False
+
     return True
+
+
+def informacoes(cpf, nome, senha):
+    print(f"\nSeja Bem Vindo {nome}!\nAgora você tem acesso a todas nossas funcionalidades.")
+
 
 def carregar_usuarios():
     try:
-        with open('usuarios.json', 'r') as arquivo:
+        with open('dados_convenio.json', 'r') as arquivo:
             return json.load(arquivo)
     except FileNotFoundError:
         return {}
 
-def salvar_usuarios(usuarios):
-    with open('usuarios.json', 'w') as arquivo:
-        json.dump(usuarios, arquivo, indent=4)
+
+def salvar_usuarios(dados):
+    with open('dados_convenio.json', 'w') as arquivo:
+        json.dump(dados, arquivo, indent=4)
+
 
 def adicionar_usuario(cpf, nome, senha):
-    usuarios = carregar_usuarios()
-    usuarios[cpf] = {"nome": nome, "senha": senha}
-    salvar_usuarios(usuarios)
+    dados = carregar_usuarios()
+    dados[rg] = {"nome": nome, "senha": senha}
+    salvar_usuarios(dados)
 
-while True:
-    print("Bem vindo ao site Notredame\n1- Entrar\n2- Criar Usuário")
-    decisao = input()
 
-    match decisao:
-        case '1':
-            usuarios = carregar_usuarios()
-            while True:
-                cpf = input("Digite seu cpf: ")
-                if valida_cpf(cpf):
-                    break
-                else:
-                    print("CPF incorreto!")
+decisao = input("""
+1 - Adicionar dados do convênio
+2 - Agendar consulta
+3 - Exibir dados do convênio
+4 - Sair
+""")
 
-            while True:
-                senha = input("Digite sua senha: ")
-                if not valida_senha(senha):
-                    print("Senha incorreta!")
-                elif usuarios.get(cpf, {}).get("senha") != senha:
-                    print("Senha não cadastrada no banco de dados!")
-                else:
-                    print("Entrou com sucesso :)")
-                    # oi.oi()
-                    break
-
-        case '2':
-            while True:
-                cpf = input("Digite seu cpf: ")
-                cpf = re.sub(r'\D', '', cpf)
-                if valida_cpf(cpf) and not carregar_usuarios().get(cpf):
-                    break
-                else:
-                    print("Erro: CPF inválido ou já cadastrado.")
-
-            while True:
-                senha = input("Digite sua senha: ")
-                if valida_senha(senha):
-                    break
-                else:
-                    print("Erro: Senha inválida.")
-
-            while True:
-                nome = input("Digite seu nome: ")
-                if valida_nome(nome):
-                    break
-                else:
-                    print("Erro: O nome deve conter apenas letras, espaços e acentos.")
-
-            adicionar_usuario(cpf, nome, senha)
-            print("Usuário adicionado com sucesso!")
-
-        case _:
-            print("Digite um número válido!")
+match decisao:
+    case '1':
+        print("Adicione os dados!")
+        while True:
+            rg = input("Digite seu rg: ")
+            if valida_rg(rg):
+                break
+            else:
+                print("RG inválido!")
+        while True:
+            nascimento = input("Digite sua data de nascimento: ")
+            if valida_data_nascimento(nascimento):
+                break
+            else:
+                print("Data de nascimento inválida!")
+        carteira_conve = input("Digite o número da carteira do convênio: ")
