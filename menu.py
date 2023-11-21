@@ -3,6 +3,13 @@ import re
 from datetime import datetime
 
 
+def valida_conv(numero):
+    numeros = re.findall(r'\d', str(numero))
+    numeros.extend(['0'] * (10 - len(numeros)))
+    numero_formatado = re.sub(r'(\d{3})(\d{3})(\d{6})(\d{1,4})?', r'\1 \2 \3 \4', ''.join(numeros))
+    return numero_formatado
+
+
 def valida_data_nascimento(data_nascimento):
     try:
         data_formatada = datetime.strptime(data_nascimento, '%d/%m/%Y')
@@ -14,26 +21,10 @@ def valida_data_nascimento(data_nascimento):
     except ValueError:
         return False
 
-def valida_rg(rg):
-    rg_numerico = re.sub(r'\D', '', rg)
 
-    if len(rg_numerico) != 9:
-        return False
-
-    if not 1 <= int(rg_numerico[0]) <= 9:
-        return False
-
-    soma = 0
-    for i in range(2, 10):
-        soma += int(rg_numerico[i - 1]) * (11 - i)
-
-    resto = soma % 11
-    dv_calculado = 11 - resto if resto > 1 else 0
-
-    if dv_calculado != int(rg_numerico[8]):
-        return False
-
-    return True
+def valida_rg_formato(rg):
+    rg_formato = re.match(r'^\d{9}$', rg)
+    return rg_formato is not None
 
 
 def informacoes(cpf, nome, senha):
@@ -71,14 +62,19 @@ match decisao:
         print("Adicione os dados!")
         while True:
             rg = input("Digite seu rg: ")
-            if valida_rg(rg):
+            if valida_rg_formato(rg):
                 break
             else:
-                print("RG inválido!")
+                print("RG inválido! formatação (xxxxxxxxx)\nNão precisa de ./-")
         while True:
             nascimento = input("Digite sua data de nascimento: ")
             if valida_data_nascimento(nascimento):
                 break
             else:
                 print("Data de nascimento inválida!")
-        carteira_conve = input("Digite o número da carteira do convênio: ")
+        while True:
+            carteira_conve = input("Digite o número da carteira do convênio: ")
+            if valida_conv(carteira_conve):
+                break
+            else:
+                print("Número errado! formatação (xxx xxx xxxxxx xxx)")

@@ -1,6 +1,6 @@
 import re
 import json
-import main
+import menu
 
 def valida_nome(nome):
     return bool(re.match("^[a-zA-ZáéíóúãõâêîôûàèìòùäëïöüçÁÉÍÓÚÃÕÂÊÎÔÛÀÈÌÒÙÄËÏÖÜÇ\s]+$", nome))
@@ -81,8 +81,8 @@ while True:
                     print("Erro: Senha não cadastrada no banco de dados!")
                 else:
                     print("Entrou com sucesso :)")
-                    main.informacoes(cpf, usuarios[cpf]["nome"], senha)
-                    exit()
+                    menu.informacoes(cpf, usuarios[cpf]["nome"], senha)
+
 
         case '2':
             while True:
