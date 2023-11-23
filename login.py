@@ -22,19 +22,22 @@ def valida_cpf(cpf):
 
 
 def valida_senha(senha):
+    erros = []
+
     if len(senha) < 8:
-        print("A senha deve ter no mínimo 8 caracteres.")
+        erros.append("A senha deve ter no mínimo 8 caracteres.")
     if not re.search(r'[A-Z]', senha):
-        print("A senha deve conter pelo menos uma letra maiúscula.")
+        erros.append("A senha deve conter pelo menos uma letra maiúscula.")
     if not re.search(r'[a-z]', senha):
-        print("A senha deve conter pelo menos uma letra minúscula.")
+        erros.append("A senha deve conter pelo menos uma letra minúscula.")
     if not re.search(r'\d', senha):
-        print("A senha deve conter pelo menos um número.")
+        erros.append("A senha deve conter pelo menos um número.")
     if not re.search(r'[!@#$%^&*(),.?":{}|<>]', senha):
-        print("A senha deve conter pelo menos um caractere especial.")
-    if len(senha) < 8 or not re.search(r'[A-Z]', senha) or not re.search(r'[a-z]', senha) or not re.search(r'\d',
-                                                                                                           senha) or not re.search(
-            r'[!@#$%^&*(),.?":{}|<>]', senha):
+        erros.append("A senha deve conter pelo menos um caractere especial.")
+
+    if erros:
+        for erro in erros:
+            print(erro)
         return False
     return True
 
@@ -67,7 +70,8 @@ while True:
             usuarios = carregar_usuarios()
             while True:
                 cpf = input("Digite seu cpf: ")
-                if valida_cpf(cpf):
+                cpf_digits = re.sub(r'\D', '', cpf)
+                if valida_cpf(cpf_digits) and cpf_digits in usuarios:
                     print(f'O CPF {cpf} é válido.')
                     break
                 else:
@@ -77,11 +81,11 @@ while True:
                 senha = input("Digite sua senha: ")
                 if not valida_senha(senha):
                     print("Erro: Senha inválida!")
-                elif usuarios.get(cpf, {}).get("senha") != senha:
+                elif usuarios.get(cpf_digits, {}).get("senha") != senha:
                     print("Erro: Senha não cadastrada no banco de dados!")
                 else:
                     print("Entrou com sucesso :)")
-                    menu.informacoes(cpf, usuarios[cpf]["nome"], senha)
+                    menu.main(cpf_digits, usuarios[cpf_digits]["nome"])
 
 
         case '2':
@@ -91,7 +95,7 @@ while True:
                 if valida_cpf(cpf) and not carregar_usuarios().get(cpf):
                     break
                 else:
-                    print("Erro: CPF inválido ou já cadastrado.")
+                    print("Erro: CPF inválido ou já cadastrado")
 
             while True:
                 senha = input("Digite sua senha: ")
